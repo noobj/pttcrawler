@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import urllib2
 import time
 from functools import wraps
+import re
 
 
 def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
@@ -52,18 +53,28 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
 class Crawler():
     def parser(self, code, keyword="python"):
         for i in code.find_all(class_='r-ent'):
-            if keyword in i.a.getText():
+            if i.a and keyword in i.a.getText():
                 print i.a.getText()
 
     @retry((urllib2.HTTPError, urllib2.URLError), tries=2, delay=2, backoff=1)
     def get_page(self, url):
         return BeautifulSoup(urllib2.urlopen(url).read())
 
+    def get_max_page(self, url):
+	result = self.get_page(url)
+	href = result.find_all(class_='btn wide')[1].get('href')
+	num = re.findall(re.compile(r"\d+"), href)[0]
+	return int(num) + 1
+		
+
     def start(self):
-        for i in xrange(1, 319):
+	url = "https://www.ptt.cc/bbs/CodeJob/index.html"
+	maxPage = self.get_max_page(url)
+
+        for i in xrange(1, maxPage):
             url = "https://www.ptt.cc/bbs/CodeJob/index{0}.html".format(i)
             page = self.get_page(url)
-            self.parser(page, "python") 
+            self.parser(page, "python")
 
 if __name__ == '__main__':
     fucker = Crawler()
