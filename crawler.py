@@ -4,6 +4,7 @@ import urllib2
 import time
 from functools import wraps
 import re
+import sys
 
 
 def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
@@ -51,6 +52,9 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
 
 
 class Crawler():
+    def __init__(self, keyword="python"):
+        self.key = keyword
+
     def parser(self, code, keyword="python"):
         for i in code.find_all(class_='r-ent'):
             if i.a and keyword in i.a.getText():
@@ -65,7 +69,6 @@ class Crawler():
 	href = result.find_all(class_='btn wide')[1].get('href')
 	num = re.findall(re.compile(r"\d+"), href)[0]
 	return int(num) + 1
-		
 
     def start(self):
 	url = "https://www.ptt.cc/bbs/CodeJob/index.html"
@@ -74,8 +77,9 @@ class Crawler():
         for i in xrange(1, maxPage):
             url = "https://www.ptt.cc/bbs/CodeJob/index{0}.html".format(i)
             page = self.get_page(url)
-            self.parser(page, "python")
+            self.parser(page, self.key)
 
 if __name__ == '__main__':
-    fucker = Crawler()
+    keyword = sys.argv[1]
+    fucker = Crawler(keyword)
     fucker.start()
