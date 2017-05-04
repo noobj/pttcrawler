@@ -62,7 +62,8 @@ class Crawler():
 
     @retry((urllib2.HTTPError, urllib2.URLError), tries=2, delay=2, backoff=1)
     def get_page(self, url):
-        return BeautifulSoup(urllib2.urlopen(url).read())
+        req = urllib2.Request(url, headers={'User-Agent' : "Magic Browser"})
+        return BeautifulSoup(urllib2.urlopen( req ).read())
 
     def get_max_page(self, url):
 	result = self.get_page(url)
@@ -76,10 +77,14 @@ class Crawler():
 
         for i in xrange(1, maxPage):
             url = "https://www.ptt.cc/bbs/CodeJob/index{0}.html".format(i)
+            print "Page{0}".format(i)
             page = self.get_page(url)
             self.parser(page, self.key)
 
 if __name__ == '__main__':
-    keyword = sys.argv[1]
-    fucker = Crawler(keyword)
+    fucker = Crawler()
+    if len(sys.argv) > 1:
+        keyword = sys.argv[1]
+        fucker = Crawler(keyword)
+
     fucker.start()
