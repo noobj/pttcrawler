@@ -50,20 +50,19 @@ def retry(ExceptionToCheck, tries=4, delay=3, backoff=2, logger=None):
     return deco_retry
 
 
-
 class Crawler():
     def __init__(self, keyword="python"):
         self.key = keyword
 
     def parser(self, code, keyword="python"):
         for i in code.find_all(class_='r-ent'):
-            if i.a and keyword in i.a.getText():
+            if i.a and keyword in i.a.getText().encode('utf-8'):
                 print i.a.getText()
 
     @retry((urllib2.HTTPError, urllib2.URLError), tries=2, delay=2, backoff=1)
     def get_page(self, url):
         req = urllib2.Request(url, headers={'User-Agent' : "Magic Browser"})
-        return BeautifulSoup(urllib2.urlopen( req ).read())
+        return BeautifulSoup(urllib2.urlopen( req ).read(), "lxml")
 
     def get_max_page(self, url):
 	result = self.get_page(url)
@@ -82,9 +81,9 @@ class Crawler():
             self.parser(page, self.key)
 
 if __name__ == '__main__':
-    fucker = Crawler()
+    crawler = Crawler()
     if len(sys.argv) > 1:
         keyword = sys.argv[1]
-        fucker = Crawler(keyword)
+        crawler = Crawler(keyword)
 
-    fucker.start()
+    crawler.start()
